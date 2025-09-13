@@ -1,4 +1,5 @@
 import express from "express";
+import { connectDB } from "./src/config/dbCofig.js";
 
 const app = express();
 
@@ -6,7 +7,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5000;
 
 app.get("/", (req, res) =>
   res.send(
@@ -21,6 +22,12 @@ app.get("/", (req, res) =>
   )
 );
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.log("Failed to connect to mysql server:", error);
+  });

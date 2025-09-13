@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// output   = "../src/generated/prisma"
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id              Int       @id @default(autoincrement())
+  email           String    @unique
+  username        String?   @db.VarChar(12)
+  profile         Profile?
+  tasks           Tasks[]
+}
+
+model Profile {
+  id              Int @id @default(autoincrement())
+  firstname       String? @db.VarChar(20)
+  lastname        String? @db.VarChar(20)
+  profession      String? @db.VarChar(25)
+  profileImage    String? @db.VarChar(255)
+  userId          Int     @unique
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)   
+}
+
+model Tasks {
+  id              Int       @id @default(autoincrement())
+  title           String    @db.VarChar(256)
+  status          Int       @default(1) // 1 = Pending, 2 = Running, 3 = Completed,
+
+  startAt         DateTime
+  endAt           DateTime
+  
+  timeZone        String    @db.VarChar(64)
+  localStartDate  String?   @db.VarChar(10)
+  localStartHour  Int?
+  localEndDate    String?   @db.VarChar(64)
+  localEndHour    Int?          
+
+  reminded24h     Boolean   @default(false)
+  reminded1hStart Boolean   @default(false)
+  remindedStart   Boolean   @default(false)
+  reminded1hEnd   Boolean   @default(false)
+  remindedEnd     Boolean   @default(false)
+  
+  userId          Int
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt()
+
+  @@index([reminded24h, startAt])
+  @@index([reminded1hStart, startAt])
+  @@index([remindedStart, startAt])
+  @@index([reminded1hEnd, endAt])
+  @@index([remindedEnd, endAt])
+  @@index([userId])
+}
