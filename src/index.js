@@ -7,8 +7,12 @@ async function main() {
 
   console.log("JobReminder running at:", currentTime);
 
-  const tasks = await fetchEligibleTasks(currentTime);
-  console.log("Eligible tasks for reminders:", tasks);
+  const tasksByUser = await fetchEligibleTasks(currentTime);
+  for (const [userId, tasks] of tasksByUser.entries()) {
+    console.log(
+      `User: ${tasks[0].user.email}, Tasks: ${tasks.map((task) => task.title)}`
+    );
+  }
 }
 
 main()

@@ -2,7 +2,7 @@ import { prisma } from "../config/dbCofig.js";
 import { getReminderWindow, ReminderType } from "../utils/reminderUtils.js";
 
 export const fetchEligibleTasks = async (currentTime) => {
-  const eligibleTasks = [];
+  const userTaskMap = new Map();
 
   // Loop through each reminder type
   for (const type of Object.values(ReminderType)) {
@@ -16,8 +16,8 @@ export const fetchEligibleTasks = async (currentTime) => {
             endAt: { gte: start, lte: end },
           },
         ],
-        ReminderLog: {
-          none: { ReminderType: type },
+        reminderLogs: {
+          none: { reminderType: type },
         },
       },
       include: {
@@ -26,9 +26,16 @@ export const fetchEligibleTasks = async (currentTime) => {
     });
 
     // Attach reminder type to each task
-    tasks.forEach((t) => (t.ReminderType = type));
-    eligibleTasks.push(...tasks);
+    tasks.forEach((task) => {
+      const userId = task.userId;
+      if (!userTaskMap.has(userId)) {
+        userTaskMap.set(userId, []);
+      }
+      // Attach reminderType for later use
+      task.reminderType = type;
+      userTaskMap.get(userId).push(task);
+    });
   }
-
-  return eligibleTasks
+  // return user mapped task Map<userId, Tasks[]>
+  return userTaskMap;
 };
