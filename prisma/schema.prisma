@@ -1,10 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-// output   = "../src/generated/prisma"
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,55 +7,110 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id              Int       @id @default(autoincrement())
-  email           String    @unique
-  username        String?   @db.VarChar(12)
-  profile         Profile?
-  tasks           Tasks[]
+  id                     Int                      @id @default(autoincrement())
+  email                  String                   @unique
+  username               String?                  @db.VarChar(12)
+  password               String?
+  provider               String                   @default("local")
+  verifiedAt             DateTime?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime
+  EmailVerificationToken EmailVerificationToken[]
+  profile                Profile?
+  RefreshToken           RefreshToken[]
+  ResetPasswordToken     ResetPasswordToken[]
+  tasks                  Tasks[]
 }
 
 model Profile {
-  id              Int @id @default(autoincrement())
-  firstname       String? @db.VarChar(20)
-  lastname        String? @db.VarChar(20)
-  profession      String? @db.VarChar(25)
-  profileImage    String? @db.VarChar(255)
-  userId          Int     @unique
-  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)   
+  id           Int     @id @default(autoincrement())
+  firstname    String? @db.VarChar(20)
+  lastname     String? @db.VarChar(20)
+  profession   String? @db.VarChar(25)
+  profileImage String? @db.VarChar(255)
+  userId       Int     @unique
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Tasks {
-  id              Int       @id @default(autoincrement())
-  title           String    @db.VarChar(256)
-  status          Int       @default(1) // 1 = Pending, 2 = Running, 3 = Completed,
+  id             Int      @id @default(autoincrement())
+  title          String   @db.VarChar(256)
+  startAt        DateTime
+  endAt          DateTime
+  timeZone       String   @db.VarChar(64)
+  userId         Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  status         Int      @default(1)
+  localEndDate   String?  @db.VarChar(64)
+  localEndHour   Int?
+  localStartDate String?  @db.VarChar(10)
+  localStartHour Int?
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reminderLogs   ReminderLog[]
 
-  startAt         DateTime
-  endAt           DateTime
-  
-  timeZone        String    @db.VarChar(64)
-  localStartDate  String?   @db.VarChar(10)
-  localStartHour  Int?
-  localEndDate    String?   @db.VarChar(64)
-  localEndHour    Int?          
-
-  reminded24h     Boolean   @default(false)
-  reminded1hStart Boolean   @default(false)
-  remindedStart   Boolean   @default(false)
-  reminded1hEnd   Boolean   @default(false)
-  remindedEnd     Boolean   @default(false)
-  
-  userId          Int
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt()
-
-  @@index([reminded24h, startAt])
-  @@index([reminded1hStart, startAt])
-  @@index([remindedStart, startAt])
-  @@index([reminded1hEnd, endAt])
-  @@index([remindedEnd, endAt])
+  @@index([status, startAt])
+  @@index([status, endAt])
   @@index([userId])
+}
+
+model EmailVerificationToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  isUsed    Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  token     String   @unique @db.VarChar(256)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "EmailVerificationToken_userId_fkey")
+}
+
+model RefreshToken {
+  id           Int      @id @default(autoincrement())
+  expiresAt    DateTime
+  revoked      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  userId       Int
+  refreshToken String   @unique @db.VarChar(256)
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "RefreshToken_userId_fkey")
+}
+
+model ResetPasswordToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique @db.VarChar(256)
+  userId    Int
+  isUsed    Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "ResetPasswordToken_userId_fkey")
+}
+
+
+model ReminderLog {
+  id              Int       @id @default(autoincrement())
+  taskId          Int     
+  task            Tasks     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  reminderType    ReminderType
+  sentAt          DateTime  @default(now())
+
+  @@unique([taskId, reminderType])
+  @@index([sentAt])
+}
+
+enum ReminderType {
+  BEFORE_24H
+  BEFORE_1H
+  AT_START
+  BEFORE_1H_END
+  AT_END
 }

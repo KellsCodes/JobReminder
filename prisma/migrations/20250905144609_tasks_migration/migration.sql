@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `Tasks` ADD COLUMN `remindedStart` BOOLEAN NOT NULL DEFAULT false,
+    ADD COLUMN `status` INTEGER NOT NULL DEFAULT 1;

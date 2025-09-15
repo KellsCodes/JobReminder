@@ -1,5 +1,5 @@
 import express from "express";
-import { connectDB } from "./src/config/dbCofig.js";
+import { connectDB, prisma } from "./src/config/dbCofig.js";
 
 const app = express();
 
@@ -21,6 +21,14 @@ app.get("/", (req, res) =>
     </html>`
   )
 );
+
+app.get("/users", async (req, res) => {
+  const tasks = await prisma.tasks.findMany({
+    where: { reminded1hStart: false },
+    include: { user: true },
+  });
+  return res.json({ tasks });
+});
 
 connectDB()
   .then(() => {
