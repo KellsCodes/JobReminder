@@ -6,7 +6,7 @@ export const fetchEligibleTasks = async (currentTime) => {
 
   // Loop through each reminder type
   for (const type of Object.values(ReminderType)) {
-    const { start, end } = getReminderWindow(currentTime);
+    const { start, end } = getReminderWindow(currentTime, type);
     const tasks = await prisma.tasks.findMany({
       where: {
         status: { in: [1, 2] },
@@ -25,7 +25,7 @@ export const fetchEligibleTasks = async (currentTime) => {
       },
     });
 
-    // Attach reminder type to each task
+    // Group tasks by user
     tasks.forEach((task) => {
       const userId = task.userId;
       if (!userTaskMap.has(userId)) {
