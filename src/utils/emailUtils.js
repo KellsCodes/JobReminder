@@ -1,4 +1,11 @@
 import nodemailer from "nodemailer";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// const logoPath = join(__dirname, "../public/main-logo.webp");
 
 const gmailTransport = nodemailer.createTransport({
   service: process.env.GMAIL_SERVICE,
@@ -23,6 +30,14 @@ const mailTrapTransport = nodemailer.createTransport({
   },
 });
 
+const attachments = [
+  {
+    filename: "logo.png",
+    path: join(__dirname, "../../public/main-logo.webp"),
+    cid: "appLogo",
+  },
+];
+
 export const sendEmail = async (to, subject, html) => {
   let info;
   if (process.env.NODE_ENV === "development") {
@@ -34,6 +49,7 @@ export const sendEmail = async (to, subject, html) => {
       to,
       subject,
       html,
+      attachments,
     });
   } else {
     info = await gmailTransport.sendMail({
@@ -44,6 +60,7 @@ export const sendEmail = async (to, subject, html) => {
       to,
       subject,
       html,
+      attachments,
     });
   }
 

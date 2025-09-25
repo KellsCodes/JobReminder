@@ -145,15 +145,21 @@ export function formatEmailBody(user, tasks, nowUtc) {
   const tasksListHtml = detailedItems.join("\n");
 
   const html = `
-    <h1>Hello ${user.username},</h1>
-    <h2 style="font-family: Arial, sans-serif;">${overview}</h2>
-    <p style="font-family: Arial, sans-serif;">Here ${
-      tasks.length > 1 ? "are" : "is"
-    } your ${tasks.length > 1 ? "tasks" : "task"} summary:
-    </p>
-    <ul style="font-family: Arial, sans-serif;">
-      ${tasksListHtml}
-    </ul>
+      <div style="height: 100px; display: flex; justify-content: center; align-items: center; padding-top: 5px">
+        <img src="cid:appLogo" alt="App Logo" style="max-height: 100%;" />
+      </div>
+      <div style="padding: 20px; font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+        <h1>Hello ${user?.profile?.firstname || user.username},</h1>
+        <h2 style="font-family: Arial, sans-serif; font-size: 13px;">${overview}</h2>
+        <p style="font-family: Arial, sans-serif;">Here ${
+          tasks.length > 1 ? "are" : "is"
+        } your ${tasks.length > 1 ? "tasks" : "task"} summary:
+        </p>
+        <ul style="font-family: Arial, sans-serif;">
+          ${tasksListHtml}
+        </ul>
+      </div>
+    </div>
   `;
 
   return html;
