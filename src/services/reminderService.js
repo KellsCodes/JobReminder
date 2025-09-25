@@ -1,41 +1,42 @@
 import { prisma } from "../config/dbCofig.js";
 import { getReminderWindow, ReminderType } from "../utils/reminderUtils.js";
+import { sendEmail } from "../utils/emailUtils.js"
+import { formatEmailBody } from "./emailService.js";
 
-export const fetchEligibleTasks = async (currentTime) => {
-  const userTaskMap = new Map();
+/**
+ * Send reminders for a map of user -> tasks.
+ * After sending successfully, log each reminder in ReminderLog.
+ */
+export async function sendRemindersForUsers(userTaskMap, reminderType) {
+  for (const [userId, tasks] of userTaskMap.entries()) {
+    if (!tasks.length) continue;
 
-  // Loop through each reminder type
-  for (const type of Object.values(ReminderType)) {
-    const { start, end } = getReminderWindow(currentTime, type);
-    const tasks = await prisma.tasks.findMany({
-      where: {
-        status: { in: [1, 2] },
-        OR: [
-          {
-            startAt: { gte: start, lte: end },
-            endAt: { gte: start, lte: end },
-          },
-        ],
-        reminderLogs: {
-          none: { reminderType: type },
-        },
-      },
-      include: {
-        user: true,
-      },
-    });
+    const user = tasks[0].user; // all tasks belong to the same user
+    const emailHtml = formatEmailBody(user, tasks);
 
-    // Group tasks by user
-    tasks.forEach((task) => {
-      const userId = task.userId;
-      if (!userTaskMap.has(userId)) {
-        userTaskMap.set(userId, []);
-      }
-      // Attach reminderType for later use
-      task.reminderType = type;
-      userTaskMap.get(userId).push(task);
-    });
+    try {
+      // Send the email
+      await sendEmail({
+        to: user.email,
+        subject: "Task Reminder Notification",
+        html: emailHtml,
+      });
+
+      // Log the sent reminders
+      await prisma.reminderLog.createMany({
+        data: tasks.map((task) => ({
+          taskId: task.id,
+          reminderType,
+          sentAt: new Date(),
+        })),
+        skipDuplicates: true, // ensure we don't double-log
+      });
+
+      console.log(
+        `Reminder sent to ${user.email} for ${tasks.length} task(s).`
+      );
+    } catch (err) {
+      console.error(`Failed to send reminder to ${user.email}:`, err);
+    }
   }
-  // return user mapped task Map<userId, Tasks[]>
-  return userTaskMap;
-};
+}

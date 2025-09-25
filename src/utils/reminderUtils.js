@@ -1,38 +1,54 @@
 export const ReminderType = {
-  BEFORE_24H: "BEFORE_24H",
-  BEFORE_1H: "BEFORE_1H",
-  AT_START: "AT_START",
-  BEFORE_1H_END: "BEFORE_1H_END",
-  AT_END: "AT_END",
+  BEFORE_24H: "BEFORE_24H", // 24 hours before start
+  BEFORE_1H: "BEFORE_1H", // 1 hour before start
+  AT_START: "AT_START", // exactly at event start
+  BEFORE_1H_END: "BEFORE_1H_END", // 1 hour before end
+  AT_END: "AT_END", // exactly at event end
 };
 
-export function getReminderWindow(currentTime, type) {
-  const start = new Date(currentTime);
-  const end = new Date(currentTime);
+export function getReminderWindow(startTime, endTime, type) {
+  let start, end;
 
   switch (type) {
     case ReminderType.BEFORE_24H:
-      start.setHours(start.getHours() + 23);
-      end.setHours(end.getHours() + 24);
+      // window: between 24h and 23h before event start
+      start = new Date(startTime);
+      start.setHours(start.getHours() - 24);
+      end = new Date(startTime);
+      end.setHours(end.getHours() - 23);
       break;
+
     case ReminderType.BEFORE_1H:
-      start.setMinutes(start.getMinutes() + 0);
-      end.setHours(end.getHours() + 1);
+      // window: 1h before event start
+      start = new Date(startTime);
+      start.setHours(start.getHours() - 1);
+      end = new Date(startTime);
       break;
+
     case ReminderType.AT_START:
-      start.setMinutes(start.getMinutes() + 0);
-      end.setHours(end.getHours() + 1);
+      // window: event start time → 10 minute after
+      start = new Date(startTime);
+      end = new Date(startTime);
+      end.setMinutes(end.getMinutes() + 10);
       break;
+
     case ReminderType.BEFORE_1H_END:
-      start.setMinutes(start.getMinutes() + 0);
-      end.setHours(end.getHours() + 1);
+      // window: 1h before event end → event end
+      start = new Date(endTime);
+      start.setHours(start.getHours() - 1);
+      end = new Date(endTime);
       break;
+
     case ReminderType.AT_END:
-      start.setMinutes(start.getMinutes() + 0);
-      end.setHours(end.getHours() + 1);
+      // window: event end → 1 minute after
+      start = new Date(endTime);
+      end = new Date(endTime);
+      end.setMinutes(end.getMinutes() + 1);
       break;
+
     default:
-      break;
+      throw new Error(`Unknown reminder type: ${type}`);
   }
+
   return { start, end };
 }
