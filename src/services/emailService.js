@@ -1,35 +1,4 @@
 import { DateTime } from "luxon";
-// import { prisma } from "../config/dbCofig.js";
-// import { sendMail } from "../utils/emailUtils.js";
-
-// export const sendReminderForUsers = async (userTaskMap) => {
-//   for (const [userId, tasks] of userTaskMap.entries()) {
-//     // Skip empty task
-//     if (tasks.length === 0) continue;
-//     const userEmail = tasks[0].user.email;
-//     const user = tasks[0].user;
-//     const htmlBody = formatEmailBody(user, tasks);
-
-//     // Prepare email content and send
-//     const subject = "Your Task Reminder";
-//     try {
-//       await sendMail(userEmail, subject, htmlBody);
-
-//       // Log each reminder in ReminderLog
-//       const logs = tasks.map((task) => ({
-//         taskId: task.id,
-//         reminderType: task.reminderType,
-//       }));
-
-//       await prisma.reminderLog.createMany({
-//         data: logs,
-//         skipDuplicates: true,
-//       });
-//     } catch (error) {
-//       console.log("Error sending email to", userEmail, err);
-//     }
-//   }
-// };
 
 /**
  * Helper: format a JS Date (stored in UTC) to user's timezone string.
@@ -82,10 +51,8 @@ function classifyTask(task, nowUtc) {
  * - tasks: Array of tasks for the user
  * - returns HTML string
  */
-export function formatEmailBody(user, tasks) {
-  // if (!tasks || tasks.length === 0) return "";
-
-  const nowUtc = DateTime.utc();
+export function formatEmailBody(user, tasks, nowUtc) {
+  // const nowUtc = DateTime.utc();
 
   // classify tasks and group by a readable category key
   const groups = new Map(); // key -> { labelType, action, tasks: [], repTimeUtc }

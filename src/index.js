@@ -1,10 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
-import {
-  // fetchEligibleTasks,
-  sendRemindersForUsers,
-} from "./services/reminderService.js";
-// import { sendReminderForUsers } from "./services/emailService.js";
+import { sendRemindersForUsers } from "./services/reminderService.js";
 import { DateTime } from "luxon";
 import { getTasksForReminder } from "./services/taskService.js";
 import { connectDB } from "./config/dbCofig.js";
@@ -23,7 +19,7 @@ import { connectDB } from "./config/dbCofig.js";
  * 4. loop through the user ids, prepare email message according to the number of task for the user
  * 5. Prepare the sent notification to be sent, according to the time window, push them all into an array of objects
  * 5. send the enail out to the users
- * 6. save the current notification for each task that was sent to the users from the array of objects; the save method is upsert.
+ * 6. log to the logreminder after notification for each task was sent to users from the array of objects; the save method is upsert.
  */
 async function main() {
   // const currentTime = DateTime.utc();
@@ -33,19 +29,10 @@ async function main() {
   });
   await connectDB();
   const tasksToRemind = await getTasksForReminder(currentTime);
-  console.log(tasksToRemind)
-  return 1;
-  if (tasksByUser.size === 0) {
-    console.log("No tasks to remind at the currentTime:", currentTime);
+  if (tasksToRemind.size === 0) {
+    console.log("No tasks to remind at the currentTime:", currentTime.toISO());
   } else {
-    await sendRemindersForUsers(tasksByUser);
-    // for (const [userId, tasks] of tasksByUser.entries()) {
-    //   console.log(
-    //     `User: ${tasks[0].user.email}, Tasks: ${tasks.map(
-    //       (task) => task.title
-    //     )}`
-    //   );
-    // }
+    await sendRemindersForUsers(tasksToRemind, currentTime);
   }
 }
 

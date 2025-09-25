@@ -1,5 +1,4 @@
 import { prisma } from "../config/dbCofig.js";
-import { getReminderWindow, ReminderType } from "../utils/reminderUtils.js";
 
 export const getTasksForReminder = async (currentTime) => {
   const userTaskMap = new Map();
@@ -56,22 +55,30 @@ export const getTasksForReminder = async (currentTime) => {
         },
       ],
     },
+    include: {
+      user: {
+        select: {
+          email: true,
+          username: true,
+          profile: {
+            select: { firstname: true, lastname: true },
+          },
+        },
+      },
+    },
   });
-  return reminders;
 
-  // return 1;
-  // Loop through each reminder type
 
-  // // Group tasks by user
-  // tasks.forEach((task) => {
-  //   const userId = task.userId;
-  //   if (!userTaskMap.has(userId)) {
-  //     userTaskMap.set(userId, []);
-  //   }
-  //   // Attach reminderType for later use
-  //   task.reminderType = type;
-  //   userTaskMap.get(userId).push(task);
-  // });
+  // Group tasks by user, this will enable sending grouped notification to single email and not overwhelming user inbox
+  reminders.forEach((task) => {
+    const userId = task.userId;
+    if (!userTaskMap.has(userId)) {
+      userTaskMap.set(userId, []);
+    }
+    // Attach reminderType for later use
+    // task.reminderType = type;
+    userTaskMap.get(userId).push(task);
+  });
   // return user mapped task Map<userId, Tasks[]>
   return userTaskMap;
 };
