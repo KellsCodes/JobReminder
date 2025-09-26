@@ -1,6 +1,8 @@
 import nodemailer from "nodemailer";
+import path from "path";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import ejs from "ejs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -38,32 +40,38 @@ const attachments = [
   },
 ];
 
-export const sendEmail = async (to, subject, html) => {
+export const sendEmail = async (to, subject, emailHtmlData) => {
   let info;
-  if (process.env.NODE_ENV === "development") {
-    info = await mailTrapTransport.sendMail({
+  try {
+    const mailBody = await ejs.renderFile(
+      path.join(__dirname, "../templates/example.ejs"),
+      { emailHtmlData },
+      {
+        async: true,
+      }
+    );
+    const mailOptions = {
       from: {
         name: "Task.it",
-        address: process.env.GMAIL_USER,
       },
       to,
       subject,
-      html,
+      html: mailBody,
       attachments,
-    });
-  } else {
-    info = await gmailTransport.sendMail({
-      from: {
-        name: "Task.it",
-        address: process.env.GMAIL_USER,
-      },
-      to,
-      subject,
-      html,
-      attachments,
-    });
+    };
+    if (process.env.NODE_ENV === "development") {
+      info = await mailTrapTransport.sendMail({
+        ...mailOptions,
+        from: { ...mailOptions.from, address: process.env.GMAIL_USER },
+      });
+    } else {
+      info = await gmailTransport.sendMail({
+        ...mailOptions,
+        from: { ...mailOptions.from, address: process.env.GMAIL_USER },
+      });
+    }
+  } catch (error) {
+    console.error(error);
   }
-
-  // console.log("Email sent:", info);
   return info;
 };

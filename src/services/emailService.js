@@ -53,9 +53,6 @@ function classifyTask(task, nowUtc) {
  * - returns HTML string
  */
 export function formatEmailBody(user, tasks, nowUtc) {
-  // const nowUtc = DateTime.utc();
-  // console.log(tasks)
-
   // classify tasks and group by a readable category key
   const groups = new Map(); // key -> { labelType, action, tasks: [], repTimeUtc }
   const detailedItems = []; // For the list items
@@ -143,26 +140,15 @@ export function formatEmailBody(user, tasks, nowUtc) {
     overview = `You have ${overviewParts.join(", ")} and ${last}.`;
   }
 
-  // Build the HTML body
+  // Build the HTML body using ejs template view ul,format the list items
   const tasksListHtml = detailedItems.join("\n");
 
-  const html = `
-      <div style="height: 100px; display: flex; justify-content: center; align-items: center; padding-top: 5px">
-        <img src="cid:appLogo" alt="App Logo" style="max-height: 100%;" />
-      </div>
-      <div style="padding: 20px; font-family: Arial, sans-serif; font-size: 14px; color: #333;">
-        <h1>Hello ${user?.profile?.firstname || user.username},</h1>
-        <h2 style="font-family: Arial, sans-serif; font-size: 13px;">${overview}</h2>
-        <p style="font-family: Arial, sans-serif;">Here ${
-          tasks.length > 1 ? "are" : "is"
-        } your ${tasks.length > 1 ? "tasks" : "task"} summary:
-        </p>
-        <ul style="font-family: Arial, sans-serif;">
-          ${tasksListHtml}
-        </ul>
-      </div>
-    </div>
-  `;
-
-  return html;
+  return {
+    name: user?.profile?.firstname || user.username,
+    overview,
+    subheading: `Here ${tasks.length > 1 ? "are" : "is"} your ${
+      tasks.length > 1 ? "tasks" : "task"
+    } summary:`,
+    tasksListHtml,
+  };
 }

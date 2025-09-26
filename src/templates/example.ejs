@@ -1,12 +1,40 @@
-    <!-- Example using EJS -->
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Welcome, <%= user.name %></title>
-    </head>
-    <body>
-        <h1>Hello, <%= user.name %>!</h1>
-        <p>Thank you for signing up for our service.</p>
-        <p>Your account details: Email: <%= user.email %></p>
-    </body>
-    </html>
+<!-- Example using EJS -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Task Reminder</title>
+  </head>
+  <body>
+    <div
+      style="
+        height: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-top: 5px;
+      "
+    >
+      <img src="cid:appLogo" alt="App Logo" style="max-height: 100%;" />
+    </div>
+    <div
+      style="
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        color: #333;
+      "
+    >
+      <h1>Hello <%= emailHtmlData.name %>,</h1>
+      <h2 style="font-family: Arial, sans-serif; font-size: 13px;">
+        <%= emailHtmlData.overview %>
+      </h2>
+      <p style="font-family: Arial, sans-serif;">
+        <%= emailHtmlData.subheading %>
+      </p>
+
+      <ul style="font-family: Arial, sans-serif;">
+        <%- emailHtmlData.tasksListHtml %>
+      </ul>
+    </div>
+  </body>
+</html>

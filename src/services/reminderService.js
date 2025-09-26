@@ -14,12 +14,10 @@ export async function sendRemindersForUsers(
   const messageQueue = [];
   for (const [userId, tasks] of userTaskMap.entries()) {
     const user = tasks[0].user; // all tasks belong to the same user
-    const emailHtml = formatEmailBody(user, tasks, currentTime.toJSDate());
+    const emailHtmlData = formatEmailBody(user, tasks, currentTime.toJSDate());
     const subject = `Your Task${tasks.length > 1 ? "s" : ""} Reminder`;
-    messageQueue.push(sendEmail(user.email, subject, emailHtml));
+    messageQueue.push(sendEmail(user.email, subject, emailHtmlData));
   }
-  // console.log(reminderLogQueue);
-  // console.log(messageQueue);
   // return;
   // Send email to users
   const results = await Promise.allSettled(messageQueue);
