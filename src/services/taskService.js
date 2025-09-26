@@ -1,7 +1,10 @@
 import { prisma } from "../config/dbCofig.js";
+import { ReminderType } from "../utils/reminderUtils.js";
 
 export const getTasksForReminder = async (currentTime) => {
   const userTaskMap = new Map();
+  const reminderLogQueue = [];
+
   const timeDrift = {
     before: currentTime.minus({ minutes: 20 }),
     after: currentTime.plus({ minutes: 5 }),
@@ -68,17 +71,73 @@ export const getTasksForReminder = async (currentTime) => {
     },
   });
 
-
   // Group tasks by user, this will enable sending grouped notification to single email and not overwhelming user inbox
   reminders.forEach((task) => {
     const userId = task.userId;
     if (!userTaskMap.has(userId)) {
       userTaskMap.set(userId, []);
     }
-    // Attach reminderType for later use
-    // task.reminderType = type;
     userTaskMap.get(userId).push(task);
+
+    /**
+     * Attach reminderType for logging 
+     */
+    // case 1: when the start time is 24hours away
+    if (
+      task.startAt >= starts24h.minus({ minutes: 20 }).toJSDate() &&
+      task.startAt <= starts24h.plus({ minutes: 5 }).toJSDate()
+    ) {
+      reminderLogQueue.push({
+        taskId: task.id,
+        reminderType: ReminderType.BEFORE_24H,
+        sentAt: new Date(),
+      });
+    }
+    // case 2: when the start time is 1 hour away
+    if (
+      task.startAt >= starts1h.minus({ minutes: 20 }).toJSDate() &&
+      task.startAt <= starts1h.plus({ minutes: 5 }).toJSDate()
+    ) {
+      reminderLogQueue.push({
+        taskId: task.id,
+        reminderType: ReminderType.BEFORE_1H,
+        sentAt: new Date(),
+      });
+    }
+    // case 3: when the start time is now
+    if (
+      task.startAt >= timeDrift.before.toJSDate() &&
+      task.startAt <= timeDrift.after.toJSDate()
+    ) {
+      reminderLogQueue.push({
+        taskId: task.id,
+        reminderType: ReminderType.AT_START,
+        sentAt: new Date(),
+      });
+    }
+    // case 4: when the end time is 1 hour away
+    if (
+      task.endAt >= end1hBefore.minus({ minutes: 20 }).toJSDate() &&
+      task.endAt <= end1hBefore.plus({ minutes: 5 }).toJSDate()
+    ) {
+      reminderLogQueue.push({
+        taskId: task.id,
+        reminderType: ReminderType.BEFORE_1H_END,
+        sentAt: new Date(),
+      });
+    }
+    // case 5: when the end time is now
+    if (
+      task.endAt >= timeDrift.before.toJSDate() &&
+      task.endAt <= timeDrift.after.toJSDate()
+    ) {
+      reminderLogQueue.push({
+        taskId: task.id,
+        reminderType: ReminderType.AT_END,
+        sentAt: new Date(),
+      });
+    }
   });
-  // return user mapped task Map<userId, Tasks[]>
-  return userTaskMap;
+  // return user mapped task Map<userId, Tasks[]> and reminderLoqQueue[]
+  return [userTaskMap, reminderLogQueue];
 };
