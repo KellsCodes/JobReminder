@@ -1,5 +1,4 @@
 import { prisma } from "../config/dbCofig.js";
-import { ReminderType } from "../utils/reminderUtils.js";
 import { sendEmail } from "../utils/emailUtils.js";
 import { formatEmailBody } from "./emailService.js";
 
@@ -20,6 +19,7 @@ export async function sendRemindersForUsers(
     messageQueue.push(sendEmail(user.email, subject, emailHtml));
   }
   // console.log(reminderLogQueue);
+  // console.log(messageQueue);
   // return;
   // Send email to users
   const results = await Promise.allSettled(messageQueue);

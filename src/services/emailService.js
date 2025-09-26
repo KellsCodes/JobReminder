@@ -54,6 +54,7 @@ function classifyTask(task, nowUtc) {
  */
 export function formatEmailBody(user, tasks, nowUtc) {
   // const nowUtc = DateTime.utc();
+  // console.log(tasks)
 
   // classify tasks and group by a readable category key
   const groups = new Map(); // key -> { labelType, action, tasks: [], repTimeUtc }
