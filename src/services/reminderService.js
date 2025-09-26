@@ -18,7 +18,6 @@ export async function sendRemindersForUsers(
     const subject = `Your Task${tasks.length > 1 ? "s" : ""} Reminder`;
     messageQueue.push(sendEmail(user.email, subject, emailHtmlData));
   }
-  // return;
   // Send email to users
   const results = await Promise.allSettled(messageQueue);
   results.forEach((result, i) => {
