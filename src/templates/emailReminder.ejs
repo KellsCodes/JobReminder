@@ -321,7 +321,7 @@
                                                     width="100%"
                                                     height="100%"
                                                     alt=""
-                                                    src="/public/main-logo.webp"
+                                                    src="cid:appLogo"
                                                 /></a>
                                               </td>
                                             </tr>
@@ -398,7 +398,8 @@
                                                     mso-text-raise: 1px;
                                                   "
                                                 >
-                                                  Please verify your email 😀
+                                                  Hello <%= emailHtmlData.name
+                                                  %> 😀,
                                                 </h1>
                                               </td>
                                             </tr>
@@ -470,15 +471,77 @@
                                                     letter-spacing: -0.6px;
                                                     direction: ltr;
                                                     color: #424040;
-                                                    text-align: center;
+                                                    text-align: justify;
                                                     mso-line-height-rule: exactly;
                                                     mso-text-raise: 2px;
                                                   "
                                                 >
-                                                  You received this email
-                                                  because you signed up for this
-                                                  service.
+                                                  <%= emailHtmlData.overview %>
                                                 </p>
+                                                <div
+                                                  class="t24"
+                                                  style="
+                                                    mso-line-height-rule: exactly;
+                                                    mso-line-height-alt: 40px;
+                                                    line-height: 40px;
+                                                    font-size: 1px;
+                                                    display: block;
+                                                  "
+                                                >
+                                                  &nbsp;
+                                                </div>
+                                                <p
+                                                  class="t11"
+                                                  style="
+                                                    margin: 0;
+                                                    margin: 0;
+                                                    font-family: Inter,
+                                                      BlinkMacSystemFont,
+                                                      Segoe UI, Helvetica Neue,
+                                                      Arial, sans-serif;
+                                                    line-height: 22px;
+                                                    font-weight: 500;
+                                                    font-style: normal;
+                                                    font-size: 15px;
+                                                    text-decoration: none;
+                                                    text-transform: none;
+                                                    letter-spacing: -0.6px;
+                                                    direction: ltr;
+                                                    color: #424040;
+                                                    text-align: left;
+                                                    mso-line-height-rule: exactly;
+                                                    mso-text-raise: 2px;
+                                                  "
+                                                >
+                                                  <%= emailHtmlData.subheading
+                                                  %>
+                                                </p>
+                                                <ul
+                                                  class="t11"
+                                                  style="
+                                                    margin: 0;
+                                                    margin: 0;
+                                                    font-family: Inter,
+                                                      BlinkMacSystemFont,
+                                                      Segoe UI, Helvetica Neue,
+                                                      Arial, sans-serif;
+                                                    line-height: 22px;
+                                                    font-weight: 500;
+                                                    font-style: normal;
+                                                    font-size: 15px;
+                                                    text-decoration: none;
+                                                    text-transform: none;
+                                                    letter-spacing: -0.6px;
+                                                    direction: ltr;
+                                                    color: #424040;
+                                                    text-align: justify;
+                                                    mso-line-height-rule: exactly;
+                                                    mso-text-raise: 2px;
+                                                  "
+                                                >
+                                                  <%-
+                                                  emailHtmlData.tasksListHtml %>
+                                                </ul>
                                               </td>
                                             </tr>
                                           </table>

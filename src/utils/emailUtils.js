@@ -44,7 +44,7 @@ export const sendEmail = async (to, subject, emailHtmlData) => {
   let info;
   try {
     const mailBody = await ejs.renderFile(
-      path.join(__dirname, "../templates/example.ejs"),
+      path.join(__dirname, "../templates/emailReminder.ejs"),
       { emailHtmlData },
       {
         async: true,
@@ -52,7 +52,7 @@ export const sendEmail = async (to, subject, emailHtmlData) => {
     );
     const mailOptions = {
       from: {
-        name: "Task.it",
+        name: "Time.it",
       },
       to,
       subject,
