@@ -3,12 +3,14 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import ejs from "ejs";
+import { Resend } from "resend";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // const logoPath = join(__dirname, "../public/main-logo.webp");
 
+// Gmail SMTP for production or use resend(allowed on free hosting)
 const gmailTransport = nodemailer.createTransport({
   service: process.env.GMAIL_SERVICE,
   host: process.env.GMAIL_HOST,
@@ -20,7 +22,7 @@ const gmailTransport = nodemailer.createTransport({
   },
 });
 
-// Looking to send emails in production? Check out our Email API/SMTP product!
+// Mailtrap for dev/staging
 const mailTrapTransport = nodemailer.createTransport({
   host: "sandbox.smtp.mailtrap.io",
   port: !isNaN(parseInt(process.env.MAILTRAP_PORT))
@@ -32,20 +34,20 @@ const mailTrapTransport = nodemailer.createTransport({
   },
 });
 
-const attachments = [
-  {
-    filename: "logo.png",
-    path: join(__dirname, "../../public/main-logo.webp"),
-    cid: "appLogo",
-  },
-];
+// const attachments = [
+//   {
+//     filename: "logo.png",
+//     path: join(__dirname, "../../public/main-logo.webp"),
+//     cid: "appLogo",
+//   },
+// ];
 
 export const sendEmail = async (to, subject, emailHtmlData) => {
   let info;
   try {
     const mailBody = await ejs.renderFile(
       path.join(__dirname, "../templates/emailReminder.ejs"),
-      { emailHtmlData },
+      { emailHtmlData, logoURI: process.env.LOGO_URI },
       {
         async: true,
       }
@@ -57,7 +59,7 @@ export const sendEmail = async (to, subject, emailHtmlData) => {
       to,
       subject,
       html: mailBody,
-      attachments,
+      // attachments,
     };
     if (process.env.NODE_ENV === "development") {
       info = await mailTrapTransport.sendMail({
@@ -65,10 +67,22 @@ export const sendEmail = async (to, subject, emailHtmlData) => {
         from: { ...mailOptions.from, address: process.env.GMAIL_USER },
       });
     } else {
-      info = await gmailTransport.sendMail({
+      // info = await gmailTransport.sendMail({
+      //   ...mailOptions,
+      //   from: { ...mailOptions.from, address: process.env.GMAIL_USER },
+      // });
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const sentFrom = "onboarding@resend.dev";
+
+      const { data, error } = await resend.emails.send({
         ...mailOptions,
-        from: { ...mailOptions.from, address: process.env.GMAIL_USER },
+        from: sentFrom,
       });
+      if (data) {
+        console.log(`Mail sending to ${mailOptions.to} completed.`);
+      } else {
+        console.log(error);
+      }
     }
   } catch (error) {
     console.error(error);

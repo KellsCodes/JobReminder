@@ -20,6 +20,7 @@ export async function sendRemindersForUsers(
   }
   // Send email to users
   const results = await Promise.allSettled(messageQueue);
+  console.log(results)
   results.forEach((result, i) => {
     if (result.status === "fulfilled") {
       console.log(`Email ${i + 1} sent successfully`);

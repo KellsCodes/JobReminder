@@ -6,6 +6,7 @@ import { getTasksForReminder } from "./services/taskService.js";
 import { connectDB } from "./config/dbCofig.js";
 
 /**
+ * ********* PROGRAM ENTRY *********************
  * 1. Get the current time and convert to UTC time*
  * 2. Run the following query:
  *    a. if current time + 24hours is equal to startTime of a task and the status is pending, retrieve it
@@ -20,20 +21,27 @@ import { connectDB } from "./config/dbCofig.js";
  * 6. log to the logreminder after notification for each task sent to users from the array of objects; the save method is skip duplicates.
  */
 async function main() {
-  // const currentTime = DateTime.utc();
-  const isoString = "2025-09-24T17:00:00.000Z";
-  const currentTime = DateTime.fromISO(isoString, {
-    zone: "utc",
-  });
+  // const isoString = "2025-09-24T17:00:00.000Z";
+  // const currentTime = DateTime.fromISO(isoString, {
+  //   zone: "utc",
+  // });
+  // console.log(currentTime);
+  // return;
+  console.log("**************** Program starting... *****************");
+  const currentTime = DateTime.utc();
   await connectDB();
+  console.log("********** Fetching elligible tasks ***************");
   const [userTaskMap, reminderLogQueue] = await getTasksForReminder(
     currentTime
   );
   if (userTaskMap.size === 0) {
-    console.log("No tasks to remind at the currentTime:", currentTime.toISO());
+    console.log("No tasks to remind at the currentTime: ", currentTime.toISO());
   } else {
+    console.log("********** Sending mail to users ***************");
     await sendRemindersForUsers(userTaskMap, currentTime, reminderLogQueue);
   }
+  console.log("********* Program completed ****************");
+  console.log("********* Exiting now ***********");
 }
 
 main()
