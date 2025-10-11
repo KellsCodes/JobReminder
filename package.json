@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "start": "bun src/index.js"
+    "start": "bun src/index.js",
+    "cron:run": "bun run src/index.js"
   },
   "devDependencies": {
     "@types/bun": "latest",
